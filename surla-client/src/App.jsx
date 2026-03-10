@@ -16,17 +16,31 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
-      <h1>Vite + React</h1>
+
+      <h1>Welcome to My React App</h1>
+
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
+        <h2>About Me</h2>
         <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
+          <strong>Name:</strong> Cindy Ella S. Surla <br />
+          <strong>Email:</strong> surlacs@students.national-u.edu.ph <br />
+          <strong>Course:</strong> BSIT - Mobile and Web Applications <br />
+          <strong>School:</strong> National University Manila <br />
+          <strong>Interests:</strong> Web Development, Technology, Dancing, and Music <br />
+          <strong>Goal:</strong> To become a successful IT professional and build innovative digital solutions.
+        </p>
+
+        <button onClick={() => setCount((count) => count + 1)}>
+          Click Counter: {count}
+        </button>
+
+        <p>
+          Try clicking the button above to see React state in action.
         </p>
       </div>
+
       <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+        Built using Vite + React ⚡
       </p>
     </>
   )
