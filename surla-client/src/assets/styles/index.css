@@ -4,7 +4,10 @@
   body {
     @apply bg-zinc-100 text-zinc-900 antialiased;
   }
- 
+ body {
+  background-color: #f7f8fc;
+  font-family: 'Inter', sans-serif;
+}
   #root {
     @apply min-h-screen;
   }
