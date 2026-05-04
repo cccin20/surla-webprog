@@ -45,19 +45,19 @@ const dashboardNavItems = [
     label: "Dashboard",
     title: "Dashboard",
     to: "/dashboard",
-    icon: DashboardIcon,
+    icon: <DashboardIcon />,
   },
   {
     label: "Reports",
     title: "Reports",
     to: "/dashboard/reports",
-    icon: AssessmentIcon,
+    icon: <AssessmentIcon />,
   },
   {
     label: "Users",
     title: "Users",
     to: "/dashboard/users",
-    icon: PeopleIcon,
+    icon: <PeopleIcon />,
   },
 ];
 
@@ -175,7 +175,7 @@ const DashLayout = () => {
       <Divider />
 
       <List sx={{ px: 1.5, py: 1.5 }}>
-        {dashboardNavItems.map(({ label, to, icon: Icon }) => (
+        {dashboardNavItems.map(({ label, to, icon }) => (
           <ListItem key={to} disablePadding sx={{ display: "block" }}>
             <ListItemButton
               component={Link}
@@ -209,7 +209,7 @@ const DashLayout = () => {
                   color: dashboardColors.muted,
                 }}
               >
-                <Icon />
+                {icon}
               </ListItemIcon>
 
               <ListItemText primary={label} sx={{ opacity: open ? 1 : 0 }} />
@@ -300,6 +300,7 @@ const DashLayout = () => {
         sx={{
           flexGrow: 1,
           p: { xs: 2, md: 3.5 },
+          pb: { xs: 12, md: 12 },
           background:
             "radial-gradient(circle at top right, rgba(79,70,229,0.08), transparent 22%), #f8fafc",
           minHeight: "100vh",
