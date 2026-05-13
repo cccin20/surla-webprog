@@ -26,6 +26,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import ArticleIcon from "@mui/icons-material/Article";
 
 const drawerWidth = 240;
 
@@ -52,6 +53,12 @@ const dashboardNavItems = [
     title: "Reports",
     to: "/dashboard/reports",
     icon: <AssessmentIcon />,
+  },
+  {
+    label: "Articles",
+    title: "Articles",
+    to: "/dashboard/articles",
+    icon: <ArticleIcon />,
   },
   {
     label: "Users",
@@ -128,6 +135,15 @@ const DashLayout = () => {
   const handleDrawerClose = () => setOpen(false);
   const handleLogout = () => navigate("/");
 
+  const userType = localStorage.getItem("userType");
+
+  const filteredNavItems = dashboardNavItems.filter((item) => {
+    if (item.label === "Users") {
+      return userType === "admin";
+    }
+    return true;
+  });
+
   const drawerContent = (
     <>
       <DrawerHeader>
@@ -160,7 +176,7 @@ const DashLayout = () => {
               letterSpacing: "0.04em",
             }}
           >
-            {open ? "Surla Admin" : "SA"}
+            {open ? (userType === "admin" ? "Surla Admin" : "Surla Editor") : "SA"}
           </Typography>
           {open && (
             <Typography
@@ -175,7 +191,7 @@ const DashLayout = () => {
       <Divider />
 
       <List sx={{ px: 1.5, py: 1.5 }}>
-        {dashboardNavItems.map(({ label, to, icon }) => (
+        {filteredNavItems.map(({ label, to, icon }) => (
           <ListItem key={to} disablePadding sx={{ display: "block" }}>
             <ListItemButton
               component={Link}

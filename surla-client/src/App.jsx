@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 
 // HomePage Structure
 import Layout from './layouts/Layout';
@@ -15,8 +15,14 @@ import DashLayout from './layouts/DashLayout';
 import DashboardPage from './pages/DashboardPages/DashboardPage';
 import ReportsPage from './pages/DashboardPages/ReportsPage';
 import UsersPage from './pages/DashboardPages/UsersPage';
+import DashArticleListPage from './pages/DashboardPages/DashArticleListPage';
 
 import NotFoundPage from './pages/NotFoundPage';
+
+const AdminOnly = ({ children }) => {
+  const userType = localStorage.getItem('userType');
+  return userType === 'admin' ? children : <Navigate to="/dashboard" replace />;
+};
 
 const routes = [
   {
@@ -71,8 +77,16 @@ const routes = [
         element: <ReportsPage />,  
       },
       {
+        path: "articles",
+        element: <DashArticleListPage />,
+      },
+      {
         path: "users",
-        element: <UsersPage />,
+        element: (
+          <AdminOnly>
+            <UsersPage />
+          </AdminOnly>
+        ),
       }
     ],
   },
@@ -89,4 +103,3 @@ function App() {
 }
 
 export default App;
-

@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Avatar, Box, Button, Card, CardContent, Chip,
   Dialog, DialogActions, DialogContent, DialogTitle,
   FormControl, IconButton, InputAdornment, InputLabel,
   MenuItem, Select, Stack, Switch, TextField,
-  Tooltip, Typography,
+  Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { DataGrid } from "@mui/x-data-grid";
@@ -12,7 +12,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import usersSeed from "../../data/users.json";
+
+import {
+  fetchUsers,
+  createUser,
+  updateUser,
+} from "../../services/UserService";
 
 const c = {
   primary: "#4f46e5",
@@ -34,26 +39,13 @@ const cardSx = {
   backgroundColor: c.surface,
 };
 
-const initialUsers = usersSeed.map((user, index) => ({
-  id: Number(user.id ?? index + 1),
-  firstName: String(user.firstName ?? "").trim(),
-  lastName: String(user.lastName ?? "").trim(),
-  username: String(user.username ?? "").trim().toLowerCase(),
-  email: String(user.email ?? "").trim().toLowerCase(),
-  contact: String(user.contact ?? user.contactNumber ?? "").trim(),
-  age: Number(user.age ?? 0),
-  role: String(user.role ?? "").trim(),
-  gender: String(user.gender ?? "").trim(),
-  status: user.status ?? (user.isActive === false ? "inactive" : "active"),
-  level: String(user.level ?? "Beginner").trim(),
-  address: String(user.address ?? "").trim(),
-}));
-
 const emptyForm = {
   firstName: "", lastName: "", username: "", email: "",
   contact: "", age: "", password: "", role: "", gender: "",
   status: "active", level: "Beginner", address: "",
 };
+
+const roleOptions = ["admin", "editor", "viewer"];
 
 const passwordRequirements = [
   { test: (v) => v.length >= 8, message: "at least 8 characters" },
@@ -136,7 +128,7 @@ function validate(form, users, modalId) {
 }
 
 function UsersPage() {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("");
   const [filterGender, setFilterGender] = useState("");
@@ -147,6 +139,36 @@ function UsersPage() {
   const [modalId, setModalId] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
+
+  const loadUsers = useCallback(async () => {
+    try {
+      const response = await fetchUsers();
+
+      const formattedUsers = response.data.map((user) => ({
+        id: user._id,
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        username: user.username || "",
+        email: user.email || "",
+        contact: user.contactNumber || "",
+        age: Number(user.age || 0),
+        role: user.type || "",
+        gender: user.gender || "",
+        status: user.isActive ? "active" : "inactive",
+        level: user.level || "Beginner",
+        address: user.address || "",
+      }));
+
+      setUsers(formattedUsers);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(loadUsers, 0);
+    return () => clearTimeout(timer);
+  }, [loadUsers]);
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
@@ -161,8 +183,6 @@ function UsersPage() {
     const matchStatus = !filterStatus || u.status === filterStatus;
     return matchSearch && matchRole && matchGender && matchStatus;
   });
-
-  const uniqueRoles = [...new Set(users.map((u) => u.role))];
 
   const resetForm = () => {
     setForm(emptyForm);
@@ -207,53 +227,44 @@ function UsersPage() {
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validate(form, users, modalId);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const validationErrors = validate(form, users, modalId);
+
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+
+  try {
+    const payload = {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      username: form.username,
+      email: form.email,
+      contactNumber: form.contact,
+      age: form.age,
+      password: form.password,
+      type: form.role,
+      gender: form.gender,
+      address: form.address,
+      isActive: form.status === "active",
+    };
 
     if (modalId) {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === modalId
-            ? {
-                ...u, ...form,
-                age: Number(form.age),
-                username: form.username.toLowerCase(),
-                email: form.email.toLowerCase(),
-              }
-            : u
-        )
-      );
+      await updateUser(modalId, payload);
     } else {
-      const nextId = Math.max(...users.map((u) => u.id), 0) + 1;
-      const newUser = {
-        ...form,
-        id: nextId,
-        age: Number(form.age),
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        username: form.username.trim().toLowerCase(),
-        email: form.email.trim().toLowerCase(),
-        contact: form.contact.trim(),
-        role: form.role.trim(),
-        address: form.address.trim(),
-      };
-      const newUsers = [...users, newUser];
-      setUsers(newUsers);
-      setSearch("");
-      setFilterRole("");
-      setFilterGender("");
-      setFilterStatus("");
-      const lastPage = Math.ceil(newUsers.length / paginationModel.pageSize) - 1;
-      setPaginationModel((prev) => ({ ...prev, page: lastPage }));
+      await createUser(payload);
     }
 
+    await loadUsers();
+
     closeModal();
-  };
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   const toggleStatus = (id) => {
     setUsers((prev) =>
@@ -434,7 +445,7 @@ function UsersPage() {
               <InputLabel>Role</InputLabel>
               <Select value={filterRole} label="Role" onChange={(e) => setFilterRole(e.target.value)} sx={{ borderRadius: 3 }}>
                 <MenuItem value="">All Roles</MenuItem>
-                {uniqueRoles.map((r) => <MenuItem key={r} value={r}>{r}</MenuItem>)}
+                {roleOptions.map((r) => <MenuItem key={r} value={r}>{r}</MenuItem>)}
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ flex: 1, minWidth: 120 }}>
@@ -552,7 +563,7 @@ function UsersPage() {
               <FormControl size="small" fullWidth error={!!errors.role}>
                 <InputLabel>Role</InputLabel>
                 <Select name="role" value={form.role} label="Role" onChange={handleChange} sx={{ borderRadius: 2 }}>
-                  {uniqueRoles.map((role) => (
+                  {roleOptions.map((role) => (
                     <MenuItem key={role} value={role}>{role}</MenuItem>
                   ))}
                 </Select>

@@ -3,9 +3,12 @@ import Button from '../components/Button';
 
 const ArticleList = ({ articles }) => {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
       {articles.map((article, index) => (
-        <article key={article.name} className="rounded-3xl border-2 border-zinc-900 bg-zinc-100 p-4">
+        <article
+          key={article.id || article.name}
+          className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-lg"
+        >
           <div className="overflow-hidden rounded-[1.25rem] aspect-video">
             <img
               src={article.image}
@@ -18,7 +21,7 @@ const ArticleList = ({ articles }) => {
           </p>
           <h3 className="mt-2 text-lg font-semibold text-zinc-900">{article.title}</h3>
           <p className="mt-3 text-sm leading-6 text-zinc-600">
-            {article.content[0].substring(0, 150)}...
+            {(article.preview || article.content?.[0] || "").substring(0, 150)}...
           </p>
           <Link to={`/articles/${article.name}`}>
             <Button className="mt-4">Read More</Button>

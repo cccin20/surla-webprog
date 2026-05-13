@@ -1,9 +1,48 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { loginUser } from '../../services/UserService';
 
 const inputClasses =
   'mt-2 w-full rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-3 text-sm text-[#0f172a] outline-none transition placeholder:text-[#94a3b8] focus:border-[#4f46e5] focus:bg-white focus:ring-2 focus:ring-[#eef2ff]';
 
 const SignInPage = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (event) => {
+    setFormData((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+    setMessage('');
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setMessage('');
+
+    try {
+      const response = await loginUser(formData);
+
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userType', response.data.type);
+      localStorage.setItem('firstName', response.data.firstName);
+
+      navigate('/dashboard');
+    } catch (error) {
+      setMessage(error.response?.data?.message || 'Login failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <div className="mb-8">
@@ -18,17 +57,27 @@ const SignInPage = () => {
         </p>
       </div>
 
-      <form className="space-y-5">
+      <form className="space-y-5" onSubmit={handleSubmit}>
+        {message && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {message}
+          </div>
+        )}
+
         <div>
           <label htmlFor="signin-email" className="text-sm font-medium text-[#374151]">
             Email Address
           </label>
           <input
             id="signin-email"
+            name="email"
             type="email"
             placeholder="you@email.com"
             autoComplete="email"
+            value={formData.email}
+            onChange={handleChange}
             className={inputClasses}
+            required
           />
         </div>
 
@@ -38,10 +87,14 @@ const SignInPage = () => {
           </label>
           <input
             id="signin-password"
+            name="password"
             type="password"
             placeholder="Min. 8 characters"
             autoComplete="current-password"
+            value={formData.password}
+            onChange={handleChange}
             className={inputClasses}
+            required
           />
           <p className="mt-2 text-xs leading-5 text-[#94a3b8]">
             It must be a combination of minimum 8 letters, numbers, and symbols.
@@ -60,9 +113,10 @@ const SignInPage = () => {
 
         <button
           type="submit"
+          disabled={isSubmitting}
           className="w-full rounded-full bg-[#4f46e5] py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-[#4338ca] shadow-md hover:shadow-lg"
         >
-          Log In
+          {isSubmitting ? 'Logging in...' : 'Log In'}
         </button>
 
         <div className="grid gap-3 sm:grid-cols-2">
