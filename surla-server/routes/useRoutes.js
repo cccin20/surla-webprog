@@ -15,7 +15,7 @@ const { protect, admin } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.route("/").get(protect, admin, getUsers).post(protect, admin, createUser);
+router.route("/").get(getUsers).post(protect, admin, createUser);
 
 router.route("/:id").put(protect, admin, updateUser).delete(protect, admin, deleteUser);
 
