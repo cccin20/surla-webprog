@@ -17,6 +17,11 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
@@ -127,13 +132,22 @@ const getPageTitle = (pathname) =>
 const DashLayout = () => {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const location = useLocation();
   const pageTitle = getPageTitle(location.pathname);
   const navigate = useNavigate();
 
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
-  const handleLogout = () => navigate("/");
+  const handleLogoutClick = () => setLogoutDialogOpen(true);
+  const handleLogoutCancel = () => setLogoutDialogOpen(false);
+  const handleLogoutConfirm = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userType");
+    localStorage.removeItem("firstName");
+    setLogoutDialogOpen(false);
+    navigate("/");
+  };
 
   const userType = localStorage.getItem("userType");
 
@@ -281,7 +295,7 @@ const DashLayout = () => {
           </Search>
 
           <Button
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             variant="contained"
             sx={{
               color: "#fff",
@@ -325,6 +339,51 @@ const DashLayout = () => {
         <DrawerHeader />
         <Outlet />
       </Box>
+
+      <Dialog
+        open={logoutDialogOpen}
+        onClose={handleLogoutCancel}
+        PaperProps={{ sx: { borderRadius: 4, p: 1 } }}
+      >
+        <DialogTitle sx={{ color: dashboardColors.text, fontWeight: 800 }}>
+          Confirm logout
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: dashboardColors.muted }}>
+            Are you sure you want to logout?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+          <Button
+            onClick={handleLogoutCancel}
+            sx={{
+              color: dashboardColors.muted,
+              borderRadius: 999,
+              px: 2,
+              textTransform: "none",
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleLogoutConfirm}
+            variant="contained"
+            sx={{
+              backgroundColor: dashboardColors.primary,
+              borderRadius: 999,
+              boxShadow: "none",
+              px: 2.5,
+              textTransform: "none",
+              "&:hover": {
+                backgroundColor: dashboardColors.primaryDark,
+                boxShadow: "none",
+              },
+            }}
+          >
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
