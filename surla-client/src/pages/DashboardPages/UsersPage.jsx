@@ -144,7 +144,9 @@ function UsersPage() {
     try {
       const response = await fetchUsers();
 
-      const formattedUsers = response.data.map((user) => ({
+      const userList = response.data.users || response.data;
+
+      const formattedUsers = userList.map((user) => ({
         id: user._id,
         firstName: user.firstName || "",
         lastName: user.lastName || "",
